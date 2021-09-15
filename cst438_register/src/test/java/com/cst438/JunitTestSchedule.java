@@ -48,7 +48,7 @@ import org.springframework.test.context.ContextConfiguration;
  *  ContextConfiguration identifies the controller class to be tested
  *  addFilters=false turns off security.  (I could not get security to work in test environment.)
  *  WebMvcTest is needed for test environment to create Repository classes.
- */
+*/
 @ContextConfiguration(classes = { ScheduleController.class })
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest
@@ -219,7 +219,7 @@ public class JunitTestSchedule {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	private static <T> T  fromJsonString(String str, Class<T> valueType ) {
 		try {
 			return new ObjectMapper().readValue(str, valueType);
@@ -227,5 +227,4 @@ public class JunitTestSchedule {
 			throw new RuntimeException(e);
 		}
 	}
-
 }
