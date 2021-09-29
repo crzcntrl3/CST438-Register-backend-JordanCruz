@@ -16,11 +16,14 @@ public class GradebookServiceREST extends GradebookService {
 	public GradebookServiceREST() {
 		System.out.println("REST grade book service");
 	}
-
+	//Class will send new student enrollment to Gradebook service
+	//using HTTP POST and EnrollmentDTO object
 	@Override
 	public void enrollStudent(String student_email, String student_name, int course_id) {
 		
-		//TODO  complete this method in homework 4
+		EnrollmentDTO myEnrollDTO = new EnrollmentDTO(student_email, student_name, course_id);
+		
+		restTemplate.postForEntity(gradebook_url, myEnrollDTO, EnrollmentDTO.class);
 		
 	}
 
