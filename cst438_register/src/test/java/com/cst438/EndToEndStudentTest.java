@@ -47,13 +47,11 @@ public class EndToEndStudentTest {
 	@Test
 	public void addCourseTest() throws Exception {
 
-		Student x = null;
-		do {
+		Student x = studentRepository.findByEmail(TEST_USER_EMAIL);
+		while(x != null) {
+			studentRepository.delete(x);
 			x = studentRepository.findByEmail(TEST_USER_EMAIL);
-			if (x != null)
-				studentRepository.delete(x);
-		} while (x != null);
-		
+		}
 		// set the driver location and start driver
 		//@formatter:off
 		// browser	property name 				Java Driver Class
@@ -61,8 +59,6 @@ public class EndToEndStudentTest {
 		// FireFox 	webdriver.firefox.driver 	FirefoxDriver
 		// IE 		webdriver.ie.driver 		InternetExplorerDriver
 		//@formatter:on
-		
-		System.out.println("Got here: 3");
 
 		System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
 		WebDriver driver = new ChromeDriver();
