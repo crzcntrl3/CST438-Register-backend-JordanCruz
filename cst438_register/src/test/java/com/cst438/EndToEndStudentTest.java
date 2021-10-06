@@ -1,7 +1,8 @@
 package com.cst438;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,10 +15,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.cst438.domain.Course;
-import com.cst438.domain.CourseRepository;
-import com.cst438.domain.Enrollment;
-import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Student;
+import com.cst438.domain.StudentRepository;
 
 /*
  * This example shows how to use selenium testing using the web driver 
@@ -31,36 +30,28 @@ import com.cst438.domain.EnrollmentRepository;
  */
 
 @SpringBootTest
-public class EndToEndScheduleTest {
-
+public class EndToEndStudentTest {
 	public static final String CHROME_DRIVER_FILE_LOCATION = "/opt/WebDriver/bin/chromedriver";
 
-	public static final String URL = "http://localhost:3000";
+	public static final String URL = "https://cst438register-fe-jordancruz.herokuapp.com/";
 
-	public static final String TEST_USER_EMAIL = "test@csumb.edu";
+	public static final String TEST_USER_EMAIL = "tsunamiJ@csumb.edu";
 
-	public static final int TEST_COURSE_ID = 40442;
-
-	public static final String TEST_SEMESTER = "2021 Fall";
+	public static final String TEST_USER_NAME = "Johnny Tsunami";
 
 	public static final int SLEEP_DURATION = 1000; // 1 second.
-
+	
 	@Autowired
-	EnrollmentRepository enrollmentRepository;
-
-	@Autowired
-	CourseRepository courseRepository;
+	StudentRepository studentRepository;
 
 	@Test
 	public void addCourseTest() throws Exception {
 
-		Enrollment x = null;
-		do {
-			x = enrollmentRepository.findByEmailAndCourseId(TEST_USER_EMAIL, TEST_COURSE_ID);
-			if (x != null)
-				enrollmentRepository.delete(x);
-		} while (x != null);
-
+		Student x = studentRepository.findByEmail(TEST_USER_EMAIL);
+		while(x != null) {
+			studentRepository.delete(x);
+			x = studentRepository.findByEmail(TEST_USER_EMAIL);
+		}
 		// set the driver location and start driver
 		//@formatter:off
 		// browser	property name 				Java Driver Class
@@ -73,49 +64,40 @@ public class EndToEndScheduleTest {
 		WebDriver driver = new ChromeDriver();
 		// Puts an Implicit wait for 10 seconds before throwing exception
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
+		
 		try {
 
 			driver.get(URL);
 			Thread.sleep(SLEEP_DURATION);
 
-			// select the last of the radio buttons 
-			WebElement we = driver.findElement(By.xpath("(//input[@type='radio'])[last()]"));
+			// select the last button, set to be student
+			WebElement we = driver.findElement(By.xpath("(//a[@role='button'])[last()]"));
 			we.click();
 
-			// Locate and click "Get Schedule" button
-			driver.findElement(By.xpath("//a")).click();
-			Thread.sleep(SLEEP_DURATION);
-
-			// Locate and click "Add Course" button
+			// Locate "Add student" button and click
 			driver.findElement(By.xpath("//button")).click();
 			Thread.sleep(SLEEP_DURATION);
-
-			// enter course no 40442 and click "Add"
-			driver.findElement(By.xpath("//input[@name='course_id']")).sendKeys(Integer.toString(TEST_COURSE_ID));
+			
+			// Enter test name/email and click "Add"
+			driver.findElement(By.xpath("//input[@name='name']")).sendKeys(TEST_USER_NAME);
+			driver.findElement(By.xpath("//input[@name='email']")).sendKeys(TEST_USER_EMAIL);
 			driver.findElement(By.xpath("//button[span='Add']")).click();
 			Thread.sleep(SLEEP_DURATION);
 
-			// verify that new course shows in schedule.
-			Course course = courseRepository.findById(TEST_COURSE_ID).get();
-			we = driver.findElement(By.xpath("//div[@data-field='title' and @data-value='" + course.getTitle() + "']"));
-			assertNotNull(we, "Added course does not show in schedule.");
-
-			// verify that enrollment row has been inserted to database.
-			Enrollment e = enrollmentRepository.findByEmailAndCourseId(TEST_USER_EMAIL, TEST_COURSE_ID);
-			assertNotNull(e, "Course enrollment not found in database.");
+			// Verify there is new student
+			Student student = studentRepository.findByEmail(TEST_USER_EMAIL);
+			we = driver.findElement(By.xpath("//div[@data-field='name' and @data-value='" + student.getName() + "']"));
+			assertNotNull(we, "Confirm, new student added.");
 
 		} catch (Exception ex) {
 			throw ex;
 		} finally {
-
-			// clean up database.
-			Enrollment e = enrollmentRepository.findByEmailAndCourseId(TEST_USER_EMAIL, TEST_COURSE_ID);
-			if (e != null)
-				enrollmentRepository.delete(e);
-
+			//Clean db
+			Student s = studentRepository.findByEmail(TEST_USER_EMAIL);
+			if(s != null) {
+				studentRepository.delete(s);
+			}
 			driver.quit();
 		}
-
 	}
 }
